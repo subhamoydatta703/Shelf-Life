@@ -2,7 +2,6 @@ const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Joi = require("joi");
-const user = require("../models/user");
 
 const registerSchema = Joi.object({
   name: Joi.string().required(),
@@ -24,15 +23,15 @@ exports.register = async (req, res) => {
     if (error) {
       return res.status(400).json({
         success: false,
-        message: "Check your inputs",
+        message: error.details[0].message,
       });
     }
     const { name, email, password } = req.body;
 
-    const user = await User.findOne({
+    const thisUser = await User.findOne({
       email: email,
     });
-    if (user) {
+    if (thisUser) {
       return res.status(400).json({
         success: false,
         message: "User already exists",
@@ -45,7 +44,12 @@ exports.register = async (req, res) => {
       email: email,
       password: hashedPass,
     });
-    let jwtToken = await jwt.sign(
+    const userResponse = {
+      _id: newUser._id,
+      name: newUser.name,
+      email: newUser.email,
+    };
+    const jwtToken = await jwt.sign(
       {
         userId: newUser._id,
       },
@@ -56,7 +60,7 @@ exports.register = async (req, res) => {
       success: true,
       message: "User registered successfully",
       token: jwtToken,
-      user: newUser,
+      user: userResponse,
     });
   } catch (error) {
     console.log("Error: ", error);
@@ -74,7 +78,7 @@ exports.login = async (req, res) => {
     if (error) {
       return res.status(400).json({
         success: false,
-        message: "Check your inputs",
+        message: error.details[0].message,
       });
     }
 
@@ -95,19 +99,25 @@ exports.login = async (req, res) => {
         message: "Invalid credentials",
       });
     }
-    let jwtToken = await jwt.sign(
+
+    const userRes = {
+      _id: existUser._id,
+      name: existUser.name,
+      email: existUser.email,
+    };
+    const jwtToken = await jwt.sign(
       {
         userId: existUser._id,
       },
       process.env.JWT_SECRET,
       { expiresIn: "1h" },
     );
-    delete existUser.password;
-    res.status(201).json({
+
+    res.status(200).json({
       success: true,
       message: "User logged in successfully",
       token: jwtToken,
-      user: existUser,
+      user: userRes,
     });
   } catch (error) {
     console.log(error);
