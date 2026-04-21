@@ -41,7 +41,7 @@ function RegisterPage() {
 
     setLoading(true)
     try {
-      const data = await register(name, email, password)
+      const data = await register(name, email, password, confirmPassword)
       if (data.token) {
         localStorage.setItem('token', data.token)
       }
