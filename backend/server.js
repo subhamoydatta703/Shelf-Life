@@ -9,9 +9,8 @@ dbConnect();
 app.use(cors());
 app.use(express.json());
 app.use("/api/auth", require("./routes/userRoutes"));
-app.get("/", (req, res) => {
-    res.send("Home route");
-});
+app.use("/api/auth", require("./routes/householdRoutes"));
+app.use("/api/auth", require("./routes/itemRoutes"));
 
 const port = process.env.PORT || 3000 
 
