@@ -22,6 +22,7 @@ createdAt:{
 }
 })
 
+module.exports = mongoose.model("Household", householdSchema);
 
 
 

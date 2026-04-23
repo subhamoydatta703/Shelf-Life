@@ -17,7 +17,7 @@ const userSchema = new Schema({
         type: String,
         required: true,
     },
-    household: {
+    householdId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Household",
         default: null

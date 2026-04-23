@@ -1,7 +1,7 @@
 const Household = require("../models/household");
 const User = require("../models/user");
 
-const inviteCode = async () => {
+const inviteCode = () => {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 };
 exports.createHousehold = async (req, res) => {
@@ -21,10 +21,10 @@ exports.createHousehold = async (req, res) => {
     }
 
     await User.findByIdAndUpdate(req.user._id, {
-      household: thisHousehold._id,
+      householdId: thisHousehold._id,
     });
 
-    res.status(200).json({ message: "Household created" }, thisHousehold);
+    return res.status(200).json({ message: "Household created" , household: thisHousehold});
   } catch (error) {
     console.log(error);
     res.status(500).json({
