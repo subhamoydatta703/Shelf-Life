@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const Household = require("../models/household");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Joi = require("joi");
@@ -10,6 +11,7 @@ const registerSchema = Joi.object({
   confirmPassword: Joi.any().valid(Joi.ref("password")).required().messages({
     "any.only": "Passwords do not match",
   }),
+  inviteCode: Joi.string().allow('', null).optional(),
 });
 
 const loginSchema = Joi.object({
@@ -26,7 +28,7 @@ exports.register = async (req, res) => {
         message: error.details[0].message,
       });
     }
-    const { name, email, password } = req.body;
+    const { name, email, password, inviteCode } = req.body;
 
     const thisUser = await User.findOne({
       email: email,
@@ -38,12 +40,32 @@ exports.register = async (req, res) => {
       });
     }
 
+    let targetHousehold = null;
+    if (inviteCode && inviteCode.trim() !== '') {
+      const normalizedCode = inviteCode.trim().toUpperCase();
+      targetHousehold = await Household.findOne({ inviteCode: normalizedCode });
+      if (!targetHousehold) {
+        return res.status(404).json({
+          success: false,
+          message: "Invalid invite code",
+        });
+      }
+    }
+
     const hashedPass = await bcrypt.hash(password, 10);
     const newUser = await User.create({
       name: name,
       email: email,
       password: hashedPass,
+      householdId: targetHousehold ? targetHousehold._id : undefined,
     });
+
+    if (targetHousehold) {
+      await Household.updateOne(
+        { _id: targetHousehold._id },
+        { $addToSet: { members: newUser._id } }
+      );
+    }
     const userResponse = {
       _id: newUser._id,
       name: newUser.name,

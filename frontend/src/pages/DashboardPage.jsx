@@ -68,6 +68,8 @@ function DashboardPage() {
   const [householdName, setHouseholdName] = useState('')
   const [householdLoading, setHouseholdLoading] = useState(false)
   const [householdMessage, setHouseholdMessage] = useState('')
+  const [householdInviteCode, setHouseholdInviteCode] = useState('')
+  const [joinInviteCode, setJoinInviteCode] = useState('')
   const [itemForm, setItemForm] = useState(emptyItemForm)
   const [itemLoading, setItemLoading] = useState(false)
   const [itemMessage, setItemMessage] = useState('')
@@ -82,6 +84,13 @@ function DashboardPage() {
       setUser(meResponse.data)
 
       if (meResponse.data?.householdId) {
+        try {
+          const householdResponse = await api.get('/auth/household')
+          setHouseholdInviteCode(householdResponse.data.household.inviteCode)
+        } catch (e) {
+          console.error("Could not fetch household details", e)
+        }
+
         const itemsResponse = await api.get('/auth/items')
         setItems(itemsResponse.data.items ?? [])
       } else {
@@ -131,6 +140,34 @@ function DashboardPage() {
     } catch (error) {
       setHouseholdMessage(
         error.response?.data?.message || 'Could not create the household.',
+      )
+    } finally {
+      setHouseholdLoading(false)
+    }
+  }
+
+  const handleJoinSubmit = async (event) => {
+    event.preventDefault()
+    setHouseholdMessage('')
+
+    if (!joinInviteCode.trim()) {
+      setHouseholdMessage('Please enter an invite code.')
+      return
+    }
+
+    setHouseholdLoading(true)
+
+    try {
+      await api.post('/auth/household/join', {
+        inviteCode: joinInviteCode.trim(),
+      })
+
+      setJoinInviteCode('')
+      setHouseholdMessage('Joined household successfully.')
+      await loadDashboard()
+    } catch (error) {
+      setHouseholdMessage(
+        error.response?.data?.message || 'Could not join the household.',
       )
     } finally {
       setHouseholdLoading(false)
@@ -313,26 +350,56 @@ function DashboardPage() {
                   Your account is linked to a household and ready for inventory
                   tracking.
                 </p>
+                {householdInviteCode && (
+                  <div className="invite-code-display" style={{ marginTop: '1rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--bg-card-border)' }}>
+                    <span style={{ display: 'block', fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Invite code to share with family:</span>
+                    <strong style={{ fontSize: '1.25rem', color: 'var(--accent-primary)', letterSpacing: '2px' }}>{householdInviteCode}</strong>
+                  </div>
+                )}
               </div>
             ) : (
-              <form className="dashboard-form" onSubmit={handleHouseholdSubmit}>
-                <label htmlFor="household-name">Household name</label>
-                <input
-                  id="household-name"
-                  type="text"
-                  placeholder="Main Kitchen"
-                  value={householdName}
-                  onChange={(event) => setHouseholdName(event.target.value)}
-                  disabled={householdLoading}
-                />
-                <button
-                  type="submit"
-                  className="primary-button"
-                  disabled={householdLoading}
-                >
-                  {householdLoading ? 'Creating...' : 'Create household'}
-                </button>
-              </form>
+              <>
+                <form className="dashboard-form" onSubmit={handleHouseholdSubmit}>
+                  <label htmlFor="household-name">Create new household</label>
+                  <input
+                    id="household-name"
+                    type="text"
+                    placeholder="E.g. Main Kitchen"
+                    value={householdName}
+                    onChange={(event) => setHouseholdName(event.target.value)}
+                    disabled={householdLoading}
+                  />
+                  <button
+                    type="submit"
+                    className="primary-button"
+                    disabled={householdLoading}
+                  >
+                    {householdLoading ? 'Creating...' : 'Create household'}
+                  </button>
+                </form>
+
+                <div style={{ margin: '1.5rem 0', textAlign: 'center', color: 'var(--text-muted)' }}>— OR —</div>
+
+                <form className="dashboard-form" onSubmit={handleJoinSubmit}>
+                  <label htmlFor="join-code">Join existing household</label>
+                  <input
+                    id="join-code"
+                    type="text"
+                    placeholder="Enter invite code"
+                    value={joinInviteCode}
+                    onChange={(event) => setJoinInviteCode(event.target.value)}
+                    disabled={householdLoading}
+                  />
+                  <button
+                    type="submit"
+                    className="ghost-button"
+                    disabled={householdLoading}
+                    style={{ width: '100%', border: '1px solid var(--accent-primary)' }}
+                  >
+                    {householdLoading ? 'Joining...' : 'Join household'}
+                  </button>
+                </form>
+              </>
             )}
 
             {householdMessage ? (

@@ -89,3 +89,20 @@ exports.joinHousehold = async (req, res) => {
     });
   }
 };
+
+exports.getHousehold = async (req, res) => {
+  try {
+    if (!req.user.householdId) {
+      return res.status(404).json({ message: "No household connected" });
+    }
+    const thisHousehold = await Household.findById(req.user.householdId);
+    if (!thisHousehold) {
+      return res.status(404).json({ message: "Household not found" });
+    }
+    return res.status(200).json({ household: thisHousehold });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
