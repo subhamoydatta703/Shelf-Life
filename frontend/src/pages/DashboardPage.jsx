@@ -82,7 +82,7 @@ function DashboardPage() {
       setUser(meResponse.data)
 
       if (meResponse.data?.householdId) {
-        const itemsResponse = await api.get('/auth/')
+        const itemsResponse = await api.get('/auth/items')
         setItems(itemsResponse.data.items ?? [])
       } else {
         setItems([])
@@ -117,7 +117,7 @@ function DashboardPage() {
     setHouseholdLoading(true)
 
     try {
-      const response = await api.post('/auth/createhousehold', {
+      const response = await api.post('/auth/household/create', {
         name: householdName.trim(),
       })
 
@@ -158,7 +158,7 @@ function DashboardPage() {
     setItemLoading(true)
 
     try {
-      const response = await api.post('/auth/createitems', {
+      const response = await api.post('/auth/items/create', {
         ...itemForm,
         name: itemForm.name.trim(),
       })
@@ -178,7 +178,7 @@ function DashboardPage() {
     setItemMessage('')
 
     try {
-      const response = await api.put(`/auth/${itemId}`, { status })
+      const response = await api.put(`/auth/items/${itemId}`, { status })
       setItems((currentItems) =>
         currentItems.map((item) =>
           item._id === itemId ? response.data.item : item,
@@ -198,7 +198,7 @@ function DashboardPage() {
     setItemMessage('')
 
     try {
-      await api.delete(`/auth/${itemId}`)
+      await api.delete(`/auth/items/${itemId}`)
       setItems((currentItems) => currentItems.filter((item) => item._id !== itemId))
     } catch (error) {
       setItemMessage(error.response?.data?.message || 'Could not delete the item.')

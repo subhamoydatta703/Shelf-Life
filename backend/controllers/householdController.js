@@ -1,5 +1,4 @@
 const Household = require("../models/household");
-const { findOne } = require("../models/item");
 const User = require("../models/user");
 
 const inviteCode = () => {
@@ -44,11 +43,21 @@ exports.joinHousehold = async (req, res) => {
       return res.status(400).json({ message: "Invite code is required" });
     }
 
-    const inviteHousehold = await Household.findOne({ inviteCode: inviteCode });
+    const normalizedCode = inviteCode.trim().toUpperCase();
+    const inviteHousehold = await Household.findOne({ inviteCode: normalizedCode });
     if (!inviteHousehold) {
       return res.status(404).json({
         message: "Invalid invite code",
       });
+    }
+
+    const userId = req.user._id;
+
+    if (req.user.householdId) {
+      await Household.updateOne(
+        { _id: req.user.householdId },
+        { $pull: { members: userId } },
+      );
     }
 
     const result = await Household.updateOne(

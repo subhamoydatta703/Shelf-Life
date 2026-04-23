@@ -8,6 +8,7 @@ function RegisterPage() {
     email: '',
     password: '',
     confirmPassword: '',
+    inviteCode: '',
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
@@ -24,7 +25,7 @@ function RegisterPage() {
     e.preventDefault()
     setError('')
 
-    const { name, email, password, confirmPassword } = form
+    const { name, email, password, confirmPassword, inviteCode } = form
 
     if (!name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
       setError('Please fill in all fields.')
@@ -41,7 +42,7 @@ function RegisterPage() {
 
     setLoading(true)
     try {
-      const data = await register(name, email, password, confirmPassword)
+      const data = await register(name, email, password, confirmPassword, inviteCode)
       if (data.token) {
         localStorage.setItem('token', data.token)
       }
@@ -236,6 +237,26 @@ function RegisterPage() {
                     </svg>
                   )}
                 </button>
+              </div>
+            </div>
+
+            {/* Invite Code */}
+            <div className="form-group">
+              <label htmlFor="register-invite-code" className="form-label">Invite Code (Optional)</label>
+              <div className="input-wrapper">
+                <svg className="input-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
+                </svg>
+                <input
+                  id="register-invite-code"
+                  name="inviteCode"
+                  type="text"
+                  className="form-input"
+                  placeholder="Enter invite code"
+                  value={form.inviteCode}
+                  onChange={handleChange}
+                  disabled={loading || success}
+                />
               </div>
             </div>
 
