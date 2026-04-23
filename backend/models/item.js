@@ -26,7 +26,7 @@ const itemSchema = new Schema({
     required: true,
     default: 1,
   },
-  expiaryDate: {
+  expiryDate: {
     type: Date,
     required: true,
   },
