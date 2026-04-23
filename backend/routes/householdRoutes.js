@@ -2,9 +2,10 @@
 const express = require("express");
 const router = express.Router();
 
-const { createHousehold } = require("../controllers/householdController");
+const { createHousehold, joinHousehold } = require("../controllers/householdController");
 const { authMiddleware } = require("../middleware/auth");
 
-router.post("/createhousehold", authMiddleware, createHousehold);
+router.post("/household/create", authMiddleware, createHousehold);
+router.post("/household/join", authMiddleware, joinHousehold);
 
 module.exports = router;

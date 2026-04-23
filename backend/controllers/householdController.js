@@ -1,4 +1,5 @@
 const Household = require("../models/household");
+const { findOne } = require("../models/item");
 const User = require("../models/user");
 
 const inviteCode = () => {
@@ -24,11 +25,57 @@ exports.createHousehold = async (req, res) => {
       householdId: thisHousehold._id,
     });
 
-    return res.status(200).json({ message: "Household created" , household: thisHousehold});
+    return res
+      .status(200)
+      .json({ message: "Household created", household: thisHousehold });
   } catch (error) {
     console.log(error);
     res.status(500).json({
       success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+exports.joinHousehold = async (req, res) => {
+  try {
+    const { inviteCode } = req.body;
+    if (!inviteCode) {
+      return res.status(400).json({ message: "Invite code is required" });
+    }
+
+    const inviteHousehold = await Household.findOne({ inviteCode: inviteCode });
+    if (!inviteHousehold) {
+      return res.status(404).json({
+        message: "Invalid invite code",
+      });
+    }
+
+    const result = await Household.updateOne(
+      {
+        _id: inviteHousehold._id,
+        members: { $ne: req.user._id },
+      },
+      { $addToSet: { members: req.user._id } },
+    );
+    if (result.modifiedCount === 0) {
+      return res.status(400).json({
+        message: "Already a member",
+      });
+    }
+
+    await User.findByIdAndUpdate(
+      req.user._id,
+      { householdId: inviteHousehold._id },
+      { new: true, runValidators: true },
+    );
+
+    return res.status(200).json({
+      message: "Joined successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
       message: "Internal server error",
     });
   }
