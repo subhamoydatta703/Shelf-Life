@@ -63,14 +63,6 @@ function RegisterPage() {
 
   return (
     <div className="register-page">
-      {/* Animated background orbs */}
-      <div className="register-bg">
-        <div className="orb orb-1"></div>
-        <div className="orb orb-2"></div>
-        <div className="orb orb-3"></div>
-        <div className="grid-overlay"></div>
-      </div>
-
       <main className="register-container">
         {/* Brand */}
         <div className="register-brand">
