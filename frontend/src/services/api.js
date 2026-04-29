@@ -1,7 +1,9 @@
 import axios from 'axios'
 
+const serverUrl = import.meta.env.VITE_SERVER_URL || ''
+
 const api = axios.create({
-  baseURL: `${import.meta.env.REACT_APP_SERVER_URL}/api`,
+  baseURL: `${serverUrl.replace(/\/$/, '')}/api`,
   headers: {
     'Content-Type': 'application/json',
   },

@@ -56,6 +56,7 @@ shelflife/
     |   `-- main.jsx
     |-- index.html
     |-- package.json
+    |-- vercel.json
     `-- vite.config.js
 ```
 
@@ -78,10 +79,18 @@ PORT=3000
 Create `frontend/.env` if you want the frontend API client to target a specific backend URL:
 
 ```env
-REACT_APP_SERVER_URL=http://localhost:3000
+VITE_SERVER_URL=http://localhost:3000
 ```
 
-The Vite dev server also proxies `/api` requests to `http://localhost:3000`, as configured in `frontend/vite.config.js`.
+For a deployed frontend, set `VITE_SERVER_URL` to the deployed backend URL, for example:
+
+```env
+VITE_SERVER_URL=https://your-backend-service.onrender.com
+```
+
+Vite only exposes browser environment variables that begin with `VITE_`. Values such as `REACT_APP_SERVER_URL` are ignored by this project.
+
+The Vite dev server also proxies `/api` requests to `http://localhost:3000`, as configured in `frontend/vite.config.js`. If `VITE_SERVER_URL` is left empty locally, the frontend uses relative `/api` requests and the dev proxy can forward them to the local backend.
 
 ## Getting Started
 
@@ -114,6 +123,29 @@ npm run dev
 ```
 
 The frontend runs at `http://localhost:5173`. The backend runs at `http://localhost:3000` by default.
+
+## Deployment Notes
+
+The frontend uses React Router with `BrowserRouter`, so direct visits to routes such as `/login`, `/register`, and `/dashboard` need to serve `index.html`. The `frontend/vercel.json` file handles this on Vercel:
+
+```json
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+```
+
+If the Vercel project root is `frontend`, keep this file at `frontend/vercel.json`. If Vercel deploys from the repository root, place the same config at `vercel.json` in the repository root or change the Vercel project root to `frontend`.
+
+When deploying the frontend to Vercel, add this environment variable in the Vercel project settings:
+
+```text
+VITE_SERVER_URL=https://your-backend-service.onrender.com
+```
 
 ## Available Scripts
 
