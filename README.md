@@ -1,72 +1,89 @@
 # ShelfLife
 
-ShelfLife is a full-stack inventory and expiry-tracking application scaffold built with a React frontend and an Express/MongoDB backend. The current codebase includes a styled authentication UI, Axios-based API wiring on the frontend, and the beginnings of a JWT-based authentication flow on the backend.
+ShelfLife is a full-stack household inventory and expiry-tracking app. It lets users register or log in, create or join a household with an invite code, add shared inventory items, and track whether items are fresh, expiring soon, expired, used, or wasted.
 
 ## Tech Stack
 
 - Frontend: React 18, Vite, React Router, Axios
-- Backend: Node.js, Express, MongoDB with Mongoose
-- Authentication: bcryptjs, JSON Web Tokens, Joi validation
+- Backend: Node.js, Express, MongoDB, Mongoose
+- Authentication: JSON Web Tokens, bcryptjs, Joi validation
+
+## Features
+
+- User registration and login with JWT-based sessions
+- Protected dashboard route
+- Household creation with generated invite codes
+- Join an existing household by invite code
+- Shared household inventory
+- Add, list, update, and delete items
+- Derived expiry status for fresh, expiring soon, and expired items
+- Item actions for marking items as used or wasted
 
 ## Repository Structure
 
 ```text
 shelflife/
-├── backend/
-│   ├── config/
-│   │   └── db.js
-│   ├── controllers/
-│   │   └── authController.js
-│   ├── models/
-│   │   └── user.js
-│   ├── routes/
-│   │   └── userRoutes.js
-│   ├── package.json
-│   └── server.js
-└── frontend/
-    ├── src/
-    │   ├── pages/
-    │   │   ├── LoginPage.jsx
-    │   │   ├── LoginPage.css
-    │   │   ├── RegisterPage.jsx
-    │   │   └── RegisterPage.css
-    │   ├── services/
-    │   │   ├── api.js
-    │   │   └── authService.js
-    │   ├── App.jsx
-    │   ├── index.css
-    │   └── main.jsx
-    ├── index.html
-    ├── package.json
-    └── vite.config.js
+|-- backend/
+|   |-- config/
+|   |   `-- db.js
+|   |-- controllers/
+|   |   |-- authController.js
+|   |   |-- householdController.js
+|   |   `-- itemController.js
+|   |-- middleware/
+|   |   `-- auth.js
+|   |-- models/
+|   |   |-- household.js
+|   |   |-- item.js
+|   |   `-- user.js
+|   |-- routes/
+|   |   |-- householdRoutes.js
+|   |   |-- itemRoutes.js
+|   |   `-- userRoutes.js
+|   |-- package.json
+|   `-- server.js
+`-- frontend/
+    |-- src/
+    |   |-- pages/
+    |   |   |-- DashboardPage.jsx
+    |   |   |-- LoginPage.jsx
+    |   |   `-- RegisterPage.jsx
+    |   |-- services/
+    |   |   |-- api.js
+    |   |   `-- authService.js
+    |   |-- App.jsx
+    |   |-- index.css
+    |   `-- main.jsx
+    |-- index.html
+    |-- package.json
+    `-- vite.config.js
 ```
-
-## Current Status
-
-The project is in an early scaffold stage.
-
-- The frontend includes login and registration pages with a finished visual design.
-- The frontend expects API routes at `/api/auth/login` and `/api/auth/register`.
-- The backend includes database connection logic, a `User` model, and a partial registration controller.
-- Backend route mounting and complete auth endpoint wiring are not finished yet.
-- The frontend redirects to `/dashboard`, but a dashboard route is not present yet.
 
 ## Prerequisites
 
 - Node.js 18 or newer
 - npm
-- A MongoDB instance or MongoDB Atlas connection string
+- A local MongoDB instance or MongoDB Atlas connection string
+
+## Environment Variables
+
+Create `backend/.env`:
+
+```env
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+PORT=3000
+```
+
+Create `frontend/.env` if you want the frontend API client to target a specific backend URL:
+
+```env
+REACT_APP_SERVER_URL=http://localhost:3000
+```
+
+The Vite dev server also proxies `/api` requests to `http://localhost:3000`, as configured in `frontend/vite.config.js`.
 
 ## Getting Started
-
-### 1. Install dependencies
-
-Install frontend dependencies:
-
-```bash
-cd frontend
-npm install
-```
 
 Install backend dependencies:
 
@@ -75,17 +92,12 @@ cd backend
 npm install
 ```
 
-### 2. Configure environment variables
+Install frontend dependencies:
 
-Create a `.env` file inside `backend/` with the following values:
-
-```env
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-PORT=3000
+```bash
+cd frontend
+npm install
 ```
-
-## Running the Application
 
 Start the backend:
 
@@ -94,43 +106,67 @@ cd backend
 npm run dev
 ```
 
-Start the frontend in a separate terminal:
+Start the frontend in another terminal:
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-The frontend development server runs on `http://localhost:5173` and proxies `/api` requests to `http://localhost:3000`.
+The frontend runs at `http://localhost:5173`. The backend runs at `http://localhost:3000` by default.
 
 ## Available Scripts
 
-### Frontend
+Backend:
 
-- `npm run dev`: Start the Vite development server
-- `npm run build`: Create a production build
-- `npm run preview`: Preview the production build locally
-
-### Backend
-
-- `npm run start`: Start the backend with Node.js
-- `npm run dev`: Start the backend with nodemon
+- `npm run dev`: Start the Express server with nodemon
+- `npm start`: Start the Express server with Node
 - `npm test`: Placeholder test script
 
-## Backend Notes
+Frontend:
 
-- `backend/config/db.js` connects Mongoose using `MONGO_URI`
-- `backend/models/user.js` defines the `User` schema
-- `backend/controllers/authController.js` contains registration validation and token generation logic
-- `backend/routes/userRoutes.js` is currently empty and needs route definitions
-- `backend/server.js` currently starts Express and connects to MongoDB, but does not mount auth routes yet
+- `npm run dev`: Start the Vite development server
+- `npm run build`: Build the frontend for production
+- `npm run preview`: Preview the production build locally
 
-## Frontend Notes
+## API Routes
 
-- `frontend/src/services/api.js` configures Axios with a `/api` base URL and token interceptor
-- `frontend/src/services/authService.js` wraps login and registration API calls
-- `frontend/src/App.jsx` currently exposes `/login` and `/register`
-- Both auth pages currently redirect to `/dashboard`, which has not been implemented yet
+All current backend routes are mounted under `/api/auth`.
 
+| Method | Route | Auth | Description |
+| --- | --- | --- | --- |
+| `POST` | `/api/auth/register` | No | Register a user, optionally with an invite code |
+| `POST` | `/api/auth/login` | No | Log in and receive a JWT |
+| `GET` | `/api/auth/me` | Yes | Return the authenticated user |
+| `POST` | `/api/auth/household/create` | Yes | Create a household for the current user |
+| `POST` | `/api/auth/household/join` | Yes | Join a household by invite code |
+| `GET` | `/api/auth/household` | Yes | Get the current user's household |
+| `POST` | `/api/auth/items/create` | Yes | Add an inventory item |
+| `GET` | `/api/auth/items` | Yes | List inventory items for the user's household |
+| `PUT` | `/api/auth/items/:id` | Yes | Update an inventory item |
+| `DELETE` | `/api/auth/items/:id` | Yes | Delete an inventory item |
 
+Authenticated requests must include:
 
+```http
+Authorization: Bearer <token>
+```
+
+## Data Models
+
+`User` stores a name, unique email, hashed password, and optional `householdId`.
+
+`Household` stores a name, unique invite code, member user IDs, and creation date.
+
+`Item` stores household ownership, creator, name, category, quantity, expiry date, status, and creation date.
+
+Valid item categories are `produce`, `dairy`, `meat`, `pantry`, `frozen`, and `other`.
+
+Valid item statuses are `fresh`, `expiring-soon`, `expired`, `used`, and `wasted`.
+
+## Notes
+
+- JWTs are currently signed with a one-hour expiration.
+- Household inventory is scoped by the authenticated user's `householdId`.
+- The dashboard derives fresh, expiring soon, and expired states from `expiryDate` unless an item has been marked `used` or `wasted`.
+- There are no automated tests yet; the backend test script is still a placeholder.
