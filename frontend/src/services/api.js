@@ -34,4 +34,9 @@ api.interceptors.response.use(
   }
 )
 
+export const getNotifications = async () => {
+  const response = await api.get('/auth/notifications')
+  return response.data
+}
+
 export default api
