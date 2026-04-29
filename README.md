@@ -2,6 +2,8 @@
 
 ShelfLife is a full-stack household inventory and expiry-tracking app. It lets users register or log in, create or join a household with an invite code, add shared inventory items, and track whether items are fresh, expiring soon, expired, used, or wasted.
 
+Live site: https://shelf-life-webapp.vercel.app
+
 ## Tech Stack
 
 - Frontend: React 18, Vite, React Router, Axios
@@ -18,6 +20,7 @@ ShelfLife is a full-stack household inventory and expiry-tracking app. It lets u
 - Add, list, update, and delete items
 - Derived expiry status for fresh, expiring soon, and expired items
 - Item actions for marking items as used or wasted
+- Authenticated notification retrieval for user-specific expiry messages
 
 ## Repository Structure
 
@@ -29,16 +32,19 @@ shelflife/
 |   |-- controllers/
 |   |   |-- authController.js
 |   |   |-- householdController.js
-|   |   `-- itemController.js
+|   |   |-- itemController.js
+|   |   `-- notificationController.js
 |   |-- middleware/
 |   |   `-- auth.js
 |   |-- models/
 |   |   |-- household.js
 |   |   |-- item.js
+|   |   |-- notification.js
 |   |   `-- user.js
 |   |-- routes/
 |   |   |-- householdRoutes.js
 |   |   |-- itemRoutes.js
+|   |   |-- notificationRoutes.js
 |   |   `-- userRoutes.js
 |   |-- package.json
 |   `-- server.js
@@ -177,6 +183,7 @@ All current backend routes are mounted under `/api/auth`.
 | `GET` | `/api/auth/items` | Yes | List inventory items for the user's household |
 | `PUT` | `/api/auth/items/:id` | Yes | Update an inventory item |
 | `DELETE` | `/api/auth/items/:id` | Yes | Delete an inventory item |
+| `GET` | `/api/auth/notifications` | Yes | List notified notifications for the authenticated user |
 
 Authenticated requests must include:
 
@@ -192,6 +199,8 @@ Authorization: Bearer <token>
 
 `Item` stores household ownership, creator, name, category, quantity, expiry date, status, and creation date.
 
+`Notification` stores the target user, message, read state, notified state, and timestamps.
+
 Valid item categories are `produce`, `dairy`, `meat`, `pantry`, `frozen`, and `other`.
 
 Valid item statuses are `fresh`, `expiring-soon`, `expired`, `used`, and `wasted`.
@@ -201,4 +210,5 @@ Valid item statuses are `fresh`, `expiring-soon`, `expired`, `used`, and `wasted
 - JWTs are currently signed with a one-hour expiration.
 - Household inventory is scoped by the authenticated user's `householdId`.
 - The dashboard derives fresh, expiring soon, and expired states from `expiryDate` unless an item has been marked `used` or `wasted`.
+- Notifications are fetched for the authenticated user and currently filtered to records where `notified` is `true`.
 - There are no automated tests yet; the backend test script is still a placeholder.
