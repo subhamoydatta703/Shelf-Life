@@ -2,6 +2,10 @@ import axios from 'axios'
 
 const serverUrl = import.meta.env.VITE_SERVER_URL || ''
 
+if (!serverUrl && import.meta.env.PROD) {
+  throw new Error('Missing VITE_SERVER_URL environment variable')
+}
+
 const api = axios.create({
   baseURL: `${serverUrl.replace(/\/$/, '')}/api`,
   headers: {
